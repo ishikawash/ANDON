@@ -19,7 +19,7 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $(CFLAGS) $< -c
 
 run: $(TARGET)
-	time $(PWD)/$(TARGET) happy-budda.ctm && ppm2tiff out.ppm out.tiff && open out.tiff
+	time $(PWD)/$(TARGET) happy-budda.ctm && ppm2tiff out.ppm out.tiff 
 
 clean:
 	rm -f *.o $(TARGET)
