@@ -78,13 +78,13 @@ struct bvh_linear_node_t {
 	
 };
 
+struct bvh_stat_t;
+
 struct bvh_tree_t {
 	std::vector<shape_ref_t> shapes;
 	size_t total_node_count;	
 	bvh_node_t *root;
 	bvh_linear_node_t *nodes;
-	
-	std::vector<int> node_ids_intersected;
 	
 	bvh_tree_t(const std::vector<shape_ref_t> &input_shapes);
 
@@ -94,39 +94,52 @@ struct bvh_tree_t {
 	void flatten();	
 	size_t recursive_flatten(const bvh_node_t *node, size_t *offset);
 	
-	bool intersect(const ray_t& ray, isect_t &isect);	
-	bool __intersect(const ray_t& ray, isect_t &isect, std::vector<int> &node_ids) const;
+	bool intersect(const ray_t& ray, isect_t &isect, bvh_stat_t *stat) const;
+	
+	bool intersect(const ray_t& ray, isect_t &isect) const {
+		return intersect(ray, isect, NULL);
+	}	
 	
 	bool intersect(const ray_t& ray) const {
 		isect_t isect;
-		std::vector<int> node_ids;
-		return __intersect(ray, isect, node_ids);
+		return intersect(ray, isect);
+	}
+		
+};
+
+
+struct bvh_stat_t {
+	
+	std::vector<int> node_ids_intersected;
+	
+	void record_node_id(int node_id) {
+		node_ids_intersected.push_back(node_id);
 	}
 	
-	void output_as_graph() {
+	void output_graph(const bvh_tree_t &bvh_tree) {
 		std::cout << "digraph G {" << std::endl;
 		
 		for (size_t i = 0; i < node_ids_intersected.size(); i++) {
 			std::printf("%d [style=filled] \n", node_ids_intersected[i]);
 		}
 		
-		recursive_output_as_graph();
+		recursive_output_graph(bvh_tree);
 		
 		std::cout << "}" << std::endl;
 	}
 	
-	void recursive_output_as_graph(size_t offset = 0) {
-		const bvh_linear_node_t &node = nodes[offset];
+	void recursive_output_graph(const bvh_tree_t &bvh_tree, size_t offset = 0) {
+		const bvh_linear_node_t &node = bvh_tree.nodes[offset];
 		if (node.is_leaf()) {
 			return;
 		} else {
 			size_t i = offset + 1;
 			size_t j = node.second_child_offset;
-			std::printf("%d -> %d ;\n", node.node_id, nodes[i].node_id);
-			std::printf("%d -> %d ;\n", node.node_id, nodes[j].node_id);
+			std::printf("%d -> %d ;\n", node.node_id, bvh_tree.nodes[i].node_id);
+			std::printf("%d -> %d ;\n", node.node_id, bvh_tree.nodes[j].node_id);
 			
-			recursive_output_as_graph(i);
-			recursive_output_as_graph(j);
+			recursive_output_graph(bvh_tree, i);
+			recursive_output_graph(bvh_tree, j);
 		}
 	}
 	

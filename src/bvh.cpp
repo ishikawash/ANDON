@@ -126,12 +126,7 @@ size_t bvh_tree_t::recursive_flatten(const bvh_node_t *node, size_t *offset) {
 	return _offset;
 }
 
-bool bvh_tree_t::intersect(const ray_t& ray, isect_t &isect) {
-	node_ids_intersected.clear();
-	return __intersect(ray, isect, node_ids_intersected);
-}
-
-bool bvh_tree_t::__intersect(const ray_t& ray, isect_t &isect, vector<int> &node_ids) const {
+bool bvh_tree_t::intersect(const ray_t& ray, isect_t &isect, bvh_stat_t *stat) const {
 	bool hit = false;
 	vec3 origin = ray.point_at(ray.tmin);
 	vec3 inv_direction = 1.0f / ray.direction;
@@ -143,7 +138,7 @@ bool bvh_tree_t::__intersect(const ray_t& ray, isect_t &isect, vector<int> &node
 	while (true) {
 		bvh_linear_node_t *node = &nodes[node_num];
 		if (node->bounds.intersect(ray, sign, inv_direction)) {
-			node_ids.push_back(node->node_id);
+			if (stat != NULL) stat->record_node_id(node->node_id);
 			
 			if (node->shape_num > 0) {
 				for (size_t i = 0; i < node->shape_num; i++) {
