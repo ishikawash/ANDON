@@ -17,8 +17,8 @@ vec3 uniform_sphere_sample(const sphere_t &sphere, const vec3 &point, rng_t &rng
 	
 	vec3 P = vec3(x, y, z);
 	vec3 L = point - sphere.center;
-	if (dot(P, L) > 0.0f)
-		P *= 1.0f;	
+	if (dot(P, L) < 0.0f)
+		P *= -1.0f;	
 	return P + sphere.center;
 }
 

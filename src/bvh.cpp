@@ -138,7 +138,9 @@ bool bvh_tree_t::intersect(const ray_t& ray, isect_t &isect, bvh_stat_t *stat) c
 	while (true) {
 		bvh_linear_node_t *node = &nodes[node_num];
 		if (node->bounds.intersect(ray, sign, inv_direction)) {
+			#if BVH_DEBUG
 			if (stat != NULL) stat->record_node_id(node->node_id);
+			#endif
 			
 			if (node->shape_num > 0) {
 				for (size_t i = 0; i < node->shape_num; i++) {
